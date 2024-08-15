@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Function to determine if running under WSL
+is_wsl() {
+    if grep -qE "(Microsoft|WSL)" /proc/version &> /dev/null || [ -n "$WSLENV" ]; then
+        return 0  # True, running under WSL
+    else
+        return 1  # False, not running under WSL
+    fi
+}
+
 # Function to determine the OS and architecture
 get_os_architecture() {
     local os
@@ -17,19 +26,16 @@ get_os_architecture() {
             esac
             ;;
         Linux)
-            case "$arch" in
-                aarch64) echo "linux_aarch64" ;;
-                x86_64) echo "linux_x64" ;;
-                armv7l) echo "linux_armv7l" ;;
-                *)
-                    if command -v wsl >/dev/null; then
-                        echo "windows_amd64"
-                    else
-                        echo "Unsupported Linux architecture: $arch" >&2
-                        exit 1
-                    fi
-                    ;;
-            esac
+            if is_wsl; then
+                echo "windows_amd64"
+            else
+                case "$arch" in
+                    aarch64) echo "linux_aarch64" ;;
+                    x86_64) echo "linux_x64" ;;
+                    armv7l) echo "linux_armv7l" ;;
+                    *) echo "Unsupported Linux architecture: $arch" >&2; exit 1 ;;
+                esac
+            fi
             ;;
         *)
             echo "Unsupported OS: $os" >&2
@@ -43,7 +49,7 @@ architecture=$(get_os_architecture)
 
 # Determine file extension based on the OS and architecture
 case "$architecture" in
-    windows_amd64 )
+    "windows_amd64" )
         file_extension=".zip"
         ;;
     * )
@@ -68,12 +74,15 @@ release_file_url="https://github.com/rhasspy/piper/releases/download/$release_ta
 echo "Downloading $release_file_url..."
 curl -L -o "$release_file_name" "$release_file_url"
 
+# Create a temporary directory for extraction
+temp_dir=$(mktemp -d)
+
 # Extract the archive based on the OS and architecture
 echo "Extracting $release_file_name..."
 case "$architecture" in
-    windows_amd64 )
+    "windows_amd64" )
         if command -v unzip >/dev/null; then
-            unzip "$release_file_name" -d ./extracted_files
+            unzip "$release_file_name" -d "$temp_dir"
         else
             echo "unzip command not found. Please install it in WSL." >&2
             exit 1
@@ -81,7 +90,7 @@ case "$architecture" in
         ;;
     * )
         if command -v tar >/dev/null; then
-            tar -xzf "$release_file_name" -C ./
+            tar -xzf "$release_file_name" -C "$temp_dir"
         else
             echo "tar command not found. Please install it." >&2
             exit 1
@@ -89,7 +98,12 @@ case "$architecture" in
         ;;
 esac
 
-# Clean up the downloaded archive
+# Move all files from the temporary directory to the parent directory
+echo "Moving files to the parent directory..."
+mv "$temp_dir"/piper/* ./
+
+# Clean up
+rm -rf "$temp_dir"
 rm "$release_file_name"
 
 echo "Piper installation complete."
