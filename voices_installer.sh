@@ -69,6 +69,17 @@ if [ ! -d "$destination_folder" ]; then
     mkdir "$destination_folder"
 fi
 
+# Function to check if a file is already installed
+is_installed() {
+    local file_basename="$1"
+    # Check for .onnx and .onnx.json files
+    if [ -f "$destination_folder/$file_basename.onnx" ] || [ -f "$destination_folder/$file_basename.onnx.json" ]; then
+        return 0  # File is installed
+    else
+        return 1  # File is not installed
+    fi
+}
+
 # Function to download and extract files based on language filter
 download_and_extract_files() {
     local lang_filter=$1
@@ -76,14 +87,24 @@ download_and_extract_files() {
     for file in "${files[@]}"; do
         # Check if the file matches the language filter
         if [[ "$file" == *"$lang_filter"* ]]; then
-            # Download the file
-            curl -L -o "$file" "$url/$file"
+            local file_basename="${file#voice-}"
+            file_basename="${file_basename%.tar.gz}"
 
-            # Extract the file to the destination folder
-            tar -xzf "$file" -C "$destination_folder"
+            # Check if the file is already installed
+            if is_installed "$file_basename"; then
+                echo "$file is already installed."
+            else
+                # Download the file
+                echo "Downloading $file..."
+                curl -L -o "$file" "$url/$file"
 
-            # Clean up the downloaded archive
-            rm "$file"
+                # Extract the file to the destination folder
+                echo "Extracting $file..."
+                tar -xzf "$file" -C "$destination_folder"
+
+                # Clean up the downloaded archive
+                rm "$file"
+            fi
         fi
     done
 }

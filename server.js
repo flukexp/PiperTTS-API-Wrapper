@@ -7,7 +7,7 @@ const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const DEFAULT_VOICE = "en_US-lessac-medium.onnx"; // Default voice model
+const DEFAULT_VOICE = "en-us-lessac-medium.onnx"; // Default voice model
 const MODELS_DIR = path.join(__dirname, 'models');
 const PIPER_PATH = os.platform() === 'win32' ? './piper.exe' : 'piper';
 

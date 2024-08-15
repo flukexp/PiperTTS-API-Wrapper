@@ -44,6 +44,16 @@ get_os_architecture() {
     esac
 }
 
+# Function to check if Piper is already installed
+check_if_installed() {
+    if [ -x "./piper" ]; then
+        echo "Piper is already installed."
+        exit 0
+    fi
+}
+
+check_if_installed
+
 # Determine OS and architecture
 architecture=$(get_os_architecture)
 
