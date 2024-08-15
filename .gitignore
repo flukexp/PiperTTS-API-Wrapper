@@ -22,3 +22,7 @@ models/MODEL_CARD
 *.dll
 *.exe
 *.ort
+*.tar.gz
+espeak-ng
+piper
+piper_phonemize
