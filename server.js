@@ -9,7 +9,55 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 const DEFAULT_VOICE = "en-us-lessac-medium.onnx"; // Default voice model
 const MODELS_DIR = path.join(__dirname, 'models');
-const PIPER_PATH = os.platform() === 'win32' ? './piper.exe' : 'piper';
+
+function getPiperPath() {
+    const platform = os.platform();
+    const isWSL = fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+    if (platform === 'win32' || (platform === 'linux' && isWSL)) {
+        return './piper.exe';
+    } else {
+        // For macOS or other platforms, set to default executable
+        return 'piper';
+    }
+}
+
+function getModelPath(fileName) {
+    const platform = os.platform();
+    const isWSL = fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+    if (platform === 'win32' || (platform === 'linux' && isWSL)) {
+        return `${fileName}`;
+    } else {
+        // For macOS or other platforms, set to default executable
+        return path.join(__dirname,fileName);
+    }
+}
+
+function getVoicePath(voice) {
+    const platform = os.platform();
+    const isWSL = fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+    if (platform === 'win32' || (platform === 'linux' && isWSL)) {
+        return path.join("models",voice);
+    } else {
+        // For macOS or other platforms, set to default executable
+        return path.join(MODELS_DIR,voice);
+    }
+}
+
+// Determine file or model path based on the platform and environment
+function getPath(fileName, isModel = false) {
+    const platform = os.platform();
+    const isWSL = platform === 'linux' && fs.existsSync('/proc/version') && fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+    let basePath = (platform === 'win32' || isWSL) ? '.' : __dirname;
+    basePath = isModel && basePath === '.' ? 'models' : MODELS_DIR;
+
+    if (platform === 'win32' || isWSL) {
+        return path.join(basePath, fileName);
+    } else {
+        return path.join(__dirname, fileName);
+    }
+}
+
+const PIPER_PATH = getPiperPath();
 
 // Middleware 
 app.use(cors());
@@ -37,12 +85,12 @@ function generateRandomFileName() {
 // Function to execute the Piper command with the given input and voice
 function runExecutable(input, voice, res) {
     const tempFileName = generateRandomFileName();
-    const outputFile = path.join(__dirname, tempFileName);
-
+    const outputFile = getModelPath(tempFileName);
+    const voicePath = getVoicePath(voice);
     logToTextFile(input, voice);
-    const voicePath = path.join(MODELS_DIR, voice);
-    const cmd = `${PIPER_PATH} --model ${voicePath} --output_file ${outputFile}`;
 
+    const cmd = `${PIPER_PATH} --model ${voicePath} --output_file ${outputFile}`;
+    console.log(cmd);
     
     const process = exec(cmd, (error, stdout, stderr) => {
         if (error) {
@@ -90,7 +138,7 @@ app.post('/tts', (req, res) => {
 
 // GET request handler
 app.get('/tts', (req, res) => {
-    const text = req.query.text?.trim();
+    const text = req.query.text ? req.query.text.trim() : null;
     let voice = req.query.voice || DEFAULT_VOICE;
 
     if (!text) {

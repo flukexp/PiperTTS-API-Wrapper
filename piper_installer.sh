@@ -46,7 +46,7 @@ get_os_architecture() {
 
 # Function to check if Piper is already installed
 check_if_installed() {
-    if [ -x "./piper" ]; then
+    if [ -x "./piper" ] || [ -x "./piper.exe" ]; then
         echo "Piper is already installed."
         exit 0
     fi
