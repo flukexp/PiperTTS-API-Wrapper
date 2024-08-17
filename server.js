@@ -6,7 +6,7 @@ const os = require('os');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const DEFAULT_VOICE = "en-us-lessac-medium.onnx"; // Default voice model
 const MODELS_DIR = path.join(__dirname, 'models');
 
