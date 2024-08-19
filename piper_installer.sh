@@ -25,17 +25,16 @@ get_os_architecture() {
                 *) echo "Unsupported macOS architecture: $arch" >&2; exit 1 ;;
             esac
             ;;
+        Windows)
+            echo "windows_amd64"
+            ;;
         Linux)
-            if is_wsl; then
-                echo "windows_amd64"
-            else
-                case "$arch" in
-                    aarch64) echo "linux_aarch64" ;;
-                    x86_64) echo "linux_x64" ;;
-                    armv7l) echo "linux_armv7l" ;;
-                    *) echo "Unsupported Linux architecture: $arch" >&2; exit 1 ;;
-                esac
-            fi
+            case "$arch" in
+                aarch64) echo "linux_aarch64" ;;
+                x86_64) echo "linux_x64" ;;
+                armv7l) echo "linux_armv7l" ;;
+                *) echo "Unsupported Linux architecture: $arch" >&2; exit 1 ;;
+            esac
             ;;
         *)
             echo "Unsupported OS: $os" >&2
