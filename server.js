@@ -17,7 +17,7 @@ function getPiperPath() {
         return './piper.exe';
     } else {
         // For macOS or other platforms, set to default executable
-        return 'piper';
+        return './piper';
     }
 }
 
