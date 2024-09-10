@@ -92,7 +92,7 @@ print_header "Checking Destination Folder"
 if [ ! -d "$destination_folder" ]; then
     print_status "Creating destination folder: $destination_folder"
     mkdir "$destination_folder"
-    check_error "Failed to create destination folder $destination_folder"
+    print_error "Failed to create destination folder $destination_folder"
 else
     print_status "Destination folder $destination_folder already exists."
 fi
@@ -125,12 +125,12 @@ download_and_extract_files() {
                 # Download the file
                 print_header "Downloading $file"
                 curl -L -o "$file" "$url/$file"
-                check_error "Failed to download $file"
+                print_error "Failed to download $file"
 
                 # Extract the file to the destination folder
                 print_header "Extracting $file"
                 tar -xzf "$file" -C "$destination_folder"
-                check_error "Failed to extract $file"
+                print_error "Failed to extract $file"
 
                 # Clean up the downloaded archive
                 rm "$file"
@@ -150,10 +150,4 @@ else
     download_and_extract_files "voice-en-us-amy-low"
 fi
 
-# Function to check for errors
-check_error() {
-    if [ $? -ne 0 ]; then
-        print_error "$1"
-        exit 1
-    fi
-}
+
