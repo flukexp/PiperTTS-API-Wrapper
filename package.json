@@ -4,11 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "chmod": "chmod +x ./piper_installer.sh ./voices_installer.sh",
-    "install-piper": "./piper_installer.sh",
-    "install-voices": "./voices_installer.sh en",
-    "start-server": "node server.js",
-    "start": "npm run chmod && npm run install-piper && npm run install-voices && npm install . && npm run start-server"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",

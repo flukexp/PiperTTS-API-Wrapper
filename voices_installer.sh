@@ -1,5 +1,28 @@
 #!/bin/bash
 
+# Define colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Function to print section headers
+print_header() {
+    echo -e "${BLUE}==================== $1 ====================${NC}"
+}
+
+# Function to print errors
+print_error() {
+    echo -e "${RED}Error: $1${NC}"
+}
+
+# Function to print status
+print_status() {
+    echo -e "${GREEN}$1${NC}"
+}
+
+# List of files to download
 files=(
     "voice-ca-upc_ona-x-low.tar.gz"
     "voice-ca-upc_pau-x-low.tar.gz"
@@ -65,8 +88,13 @@ url="https://github.com/rhasspy/piper/releases/download/v0.0.2"
 destination_folder="models"
 
 # Create the destination folder if it doesn't exist
+print_header "Checking Destination Folder"
 if [ ! -d "$destination_folder" ]; then
+    print_status "Creating destination folder: $destination_folder"
     mkdir "$destination_folder"
+    check_error "Failed to create destination folder $destination_folder"
+else
+    print_status "Destination folder $destination_folder already exists."
 fi
 
 # Function to check if a file is already installed
@@ -92,28 +120,40 @@ download_and_extract_files() {
 
             # Check if the file is already installed
             if is_installed "$file_basename"; then
-                echo "$file is already installed."
+                print_status "$file is already installed."
             else
                 # Download the file
-                echo "Downloading $file..."
+                print_header "Downloading $file"
                 curl -L -o "$file" "$url/$file"
+                check_error "Failed to download $file"
 
                 # Extract the file to the destination folder
-                echo "Extracting $file..."
+                print_header "Extracting $file"
                 tar -xzf "$file" -C "$destination_folder"
+                check_error "Failed to extract $file"
 
                 # Clean up the downloaded archive
                 rm "$file"
+                print_status "Cleaned up $file"
             fi
         fi
     done
 }
 
 # Check if a language filter argument is provided
+print_header "Processing Language Filter"
 if [[ -n $1 ]]; then
     # Call the download_and_extract_files function with the language filter argument
     download_and_extract_files "$1"
 else
     # No language filter argument provided, download voice-en-us-libritts-high
-    download_and_extract_files "voice-en-us-libritts-high"
+    download_and_extract_files "voice-en-us-amy-low"
 fi
+
+# Function to check for errors
+check_error() {
+    if [ $? -ne 0 ]; then
+        print_error "$1"
+        exit 1
+    fi
+}
