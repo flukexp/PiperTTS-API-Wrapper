@@ -15,7 +15,7 @@ This Node.js application is a Text-to-Speech (TTS) server using Piper, which con
 2. Navigate to the project directory.
     ```bash
     cd PiperTTS-API-Wrapper
-3. Install dependencies, Piper TTS, Piper sample voices:
+3. Install dependencies, Piper TTS, Piper sample voices and Start piper server:
    ```bash
    npm start
    
